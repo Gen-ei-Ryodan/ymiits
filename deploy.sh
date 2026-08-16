@@ -6,17 +6,18 @@ REMOTE_REPO="${REMOTE_REPO:-/home/alurelab/repositories/ymiits}"
 REMOTE_DOMAIN="${REMOTE_DOMAIN:-/home/alurelab/ymiits.com}"
 DEPLOY_BRANCH="${DEPLOY_BRANCH:-refactor/laravel-standard}"
 RUN_MIGRATIONS="${RUN_MIGRATIONS:-0}"
+RELEASE_ARCHIVE="/tmp/ymiits-release-$$.tar"
 
-ssh "$REMOTE_HOST" "REMOTE_REPO='$REMOTE_REPO' REMOTE_DOMAIN='$REMOTE_DOMAIN' DEPLOY_BRANCH='$DEPLOY_BRANCH' RUN_MIGRATIONS='$RUN_MIGRATIONS' bash -s" <<'REMOTE_SCRIPT'
+git archive --format=tar "$DEPLOY_BRANCH" | ssh "$REMOTE_HOST" "umask 077; cat > '$RELEASE_ARCHIVE'"
+
+ssh "$REMOTE_HOST" "REMOTE_REPO='$REMOTE_REPO' REMOTE_DOMAIN='$REMOTE_DOMAIN' DEPLOY_BRANCH='$DEPLOY_BRANCH' RUN_MIGRATIONS='$RUN_MIGRATIONS' RELEASE_ARCHIVE='$RELEASE_ARCHIVE' bash -s" <<'REMOTE_SCRIPT'
 set -Eeuo pipefail
 
-if [ ! -d "$REMOTE_REPO/.git" ]; then
-    git clone --branch "$DEPLOY_BRANCH" https://github.com/Gen-ei-Ryodan/ymiits.git "$REMOTE_REPO"
-else
-    git -C "$REMOTE_REPO" fetch origin "$DEPLOY_BRANCH"
-    git -C "$REMOTE_REPO" checkout "$DEPLOY_BRANCH"
-    git -C "$REMOTE_REPO" reset --hard "origin/$DEPLOY_BRANCH"
-fi
+mkdir -p "$REMOTE_REPO"
+git -C "$REMOTE_REPO" init -q -b "$DEPLOY_BRANCH" 2>/dev/null || true
+git -C "$REMOTE_REPO" clean -fdx -e .env -e storage/app/public -e storage/app/public/ 2>/dev/null || true
+tar -xf "$RELEASE_ARCHIVE" -C "$REMOTE_REPO"
+rm -f "$RELEASE_ARCHIVE"
 
 if [ ! -f "$REMOTE_REPO/.env" ]; then
     printf '%s\n' "Missing $REMOTE_REPO/.env; deployment stopped without changing the domain." >&2
