@@ -31,6 +31,7 @@ fi
 
 cd "$REMOTE_REPO"
 composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/testing storage/framework/views
 php artisan storage:link || true
 if [ "$RUN_MIGRATIONS" = "1" ]; then
     php artisan migrate --force
