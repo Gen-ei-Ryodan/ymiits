@@ -10,3 +10,7 @@ The application is primarily a server-rendered web application.
 ## Web Routes
 
 Public and admin route names are defined in `routes/web.php`. Admin resource routes are under `/admin`, require `auth` and `verified`, and use the `admin.` route-name prefix.
+
+## Media Serving
+
+- `GET /storage/{path}` (`storage.file`) serves uploaded media from the `public` disk (`storage/app/public`). Used because the hosting does not follow symlinks that point outside the docroot.

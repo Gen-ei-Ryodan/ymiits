@@ -19,3 +19,11 @@ YMIITS is the public website and content management system for Yayasan Manarul I
 ## Operational Notes
 
 Production secrets belong only in the server `.env`. Never commit `.env`, database credentials, logs, `vendor/`, or uploaded media.
+
+## Production
+
+- Source: `/home/alurelab/repositories/ymiits` (deployed via `deploy.sh`).
+- Web root: `/home/alurelab/ymiits.com` (docroot is `public/` contents).
+- Database: `alurelab_ymiits` (imported from `ymiits.sql`, 27 tables).
+- Site: https://ymiits.com
+- Uploaded media lives in `~/repositories/ymiits/storage/app/public` and is served via `GET /storage/{path}`.
