@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 define('LARAVEL_START', microtime(true));
 
 $projectPath = dirname(__DIR__);
-$deployedProjectPath = dirname($projectPath).'/repositories/ymiits';
+$deployedProjectPath = $projectPath.'/repositories/ymiits';
 $basePath = is_file($projectPath.'/vendor/autoload.php')
     ? $projectPath
     : $deployedProjectPath;
