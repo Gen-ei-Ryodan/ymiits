@@ -4,7 +4,7 @@ set -Eeuo pipefail
 REMOTE_HOST="${REMOTE_HOST:-alurelab}"
 REMOTE_REPO="${REMOTE_REPO:-/home/alurelab/repositories/ymiits}"
 REMOTE_DOMAIN="${REMOTE_DOMAIN:-/home/alurelab/ymiits.com}"
-DEPLOY_BRANCH="${DEPLOY_BRANCH:-refactor/laravel-standard}"
+DEPLOY_BRANCH="${DEPLOY_BRANCH:-main}"
 RUN_MIGRATIONS="${RUN_MIGRATIONS:-0}"
 RELEASE_ARCHIVE="/tmp/ymiits-release-$$.tar"
 
