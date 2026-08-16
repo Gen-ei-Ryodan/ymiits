@@ -26,7 +26,7 @@ fi
 
 if [ -d "$REMOTE_DOMAIN/storage" ] && [ ! -L "$REMOTE_DOMAIN/storage" ]; then
     mkdir -p "$REMOTE_REPO/storage/app/public"
-    rsync -a "$REMOTE_DOMAIN/storage/" "$REMOTE_REPO/storage/app/public/"
+    cp -a "$REMOTE_DOMAIN/storage/." "$REMOTE_REPO/storage/app/public/"
 fi
 
 cd "$REMOTE_REPO"
@@ -41,9 +41,30 @@ php artisan route:cache
 php artisan view:cache
 
 mkdir -p "$REMOTE_DOMAIN"
-rsync -a --delete --exclude='storage' --exclude='.well-known' public/ "$REMOTE_DOMAIN/"
-rm -rf "$REMOTE_DOMAIN/storage"
+cp -a public/. "$REMOTE_DOMAIN/"
+rm -f "$REMOTE_DOMAIN/storage"
 ln -s "$REMOTE_REPO/storage/app/public" "$REMOTE_DOMAIN/storage"
+
+for sub in build css images img; do
+    if [ -d "$REMOTE_REPO/public/$sub" ] && [ -d "$REMOTE_DOMAIN/$sub" ]; then
+        ( cd "$REMOTE_REPO/public/$sub" && find . -type f | sort ) > /tmp/ymiits-sync-src
+        ( cd "$REMOTE_DOMAIN/$sub" && find . -type f | sort ) > /tmp/ymiits-sync-dst
+        comm -23 /tmp/ymiits-sync-dst /tmp/ymiits-sync-src | while IFS= read -r f; do
+            target="$REMOTE_DOMAIN/$sub/$f"
+            rm -f -- "$target"
+            d="$(dirname -- "$target")"
+            while [ "$d" != "$REMOTE_DOMAIN/$sub" ] && [ "$d" != "/" ]; do
+                rmdir "$d" 2>/dev/null || break
+                d="$(dirname -- "$d")"
+            done
+        done
+        rm -f /tmp/ymiits-sync-src /tmp/ymiits-sync-dst
+    fi
+done
+
+for f in index.php robots.txt favicon.ico googlec0cc72f61677e79a.html; do
+    [ -e "$REMOTE_REPO/public/$f" ] || rm -f -- "$REMOTE_DOMAIN/$f"
+done
 REMOTE_SCRIPT
 
 printf 'Deployment completed for %s on %s\n' "$DEPLOY_BRANCH" "$REMOTE_HOST"
